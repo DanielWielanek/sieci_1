@@ -1,0 +1,50 @@
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+class Chat{
+	BufferedReader bufferedReader;
+	BufferedWriter bufferedWriter;
+	BufferedReader screenReader; 
+	public Chat(Socket socket) throws IOException {
+	       bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	       bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+           screenReader = new BufferedReader(new InputStreamReader(System.in));
+	}
+	String GetMessage() throws IOException {
+		return bufferedReader.readLine();
+	}
+	void SendMessage(String input) throws IOException {
+		System.out.println("Sending" + input);
+        bufferedWriter.write(input);
+        bufferedWriter.write("\n");
+        bufferedWriter.flush();
+	}
+	String Cin() throws IOException {
+		return screenReader.readLine();
+	}
+	
+}
+
+public class ServerSocketExample {
+
+   public static void main(String[] args) throws IOException {
+       ServerSocket serverSocket = new ServerSocket(12347);
+       Socket socket = serverSocket.accept();
+       Chat chat = new Chat(socket);
+       System.out.println(chat.GetMessage());
+       chat.SendMessage("Napisz: \"END\" by zakończyć połączenie.");
+           String line = chat.GetMessage();
+           while (true){
+        	   System.out.println("Client:"+line);
+        	   String input = chat.Cin();
+        	   chat.SendMessage(input);
+        	   line = chat.GetMessage();
+        	   if(line.contains("END")) {
+        		   socket.close();
+        		   System.exit(0);
+        	   }
+           }
+       
+   }
+}
